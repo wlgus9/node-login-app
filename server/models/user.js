@@ -1,3 +1,5 @@
+const express = require("express");
+const app = express();
 const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema({
@@ -57,6 +59,7 @@ userSchema.pre("save", (next) => {
 });
 
 const cookieParser = require("cookie-parser");
+
 app.use(cookieParser()); // 토큰을 쿠키에 저장하기 위해 사용
 
 app.post("/api/users/login", (req, res) => {

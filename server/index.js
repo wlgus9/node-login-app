@@ -3,15 +3,21 @@ const bodyparser = require("body-parser");
 const express = require("express");
 const app = express();
 
+require('dotenv').config();
+
 app.use(bodyparser.urlencoded({extends : true}));
 
 const mongoose = require("mongoose");
 const { User } = require("./models/user");
-mongoose.connect(config.mongoURI, {useNewUrlParser : true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false})
+mongoose.connect(process.env.MONGO_URI, {useNewUrlParser : true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false})
     .then(() => console.log('MongoDB Connected...'))
     .catch(err => console.log(err));
 
 app.get("/", (req, res) => req.send("Hello World!"));
+
+app.get("/api/hello", (req, res) => {
+    res.send("안녕하세요!");
+});
 
 /* 
     * Express 미들웨어 body-parser를 사용해 post 방식으로 전송된 데이터의 body로부터 파라미터 추출 후
@@ -27,6 +33,8 @@ app.post("/register", (req, res) => {
         });
     })
 });
+
+const auth = require("./middlware/auth");
 
 app.get("/api/users/auth", auth, (req, res) => {
     // 여기까지 미들웨어(auth.js)를 통과해 왔다는 건 Authentication이 True라는 것
