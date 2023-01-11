@@ -6,6 +6,7 @@ const app = express();
 app.use(bodyparser.urlencoded({extends : true}));
 
 const mongoose = require("mongoose");
+const { User } = require("./models/user");
 mongoose.connect(config.mongoURI, {useNewUrlParser : true, useUnifiedTopology: true, useCreateIndex: true, useFindAndModify: false})
     .then(() => console.log('MongoDB Connected...'))
     .catch(err => console.log(err));
@@ -25,6 +26,29 @@ app.post("/register", (req, res) => {
             success: true
         });
     })
+});
+
+app.get("/api/users/auth", auth, (req, res) => {
+    // 여기까지 미들웨어(auth.js)를 통과해 왔다는 건 Authentication이 True라는 것
+    // 클라이언트에게 유저 정보 전달
+    res.status(200).json({
+        _id: req.user._id,
+        isAdmin: req.user.role === 0 ? false : true,  // role이 0이면 일반 유저, 그 외는 관리자
+        isAuth: true,
+        email: req.user.email,
+        name: req.user.name,
+        lastname: req.user.lastname,
+        role: req.user.role,
+        image: req.user.image
+    });
+});
+
+app.get("/api/users/logout", auth, (req, res) => {
+    // 클라이언트의 토큰을 ""로 지워주게 되면 자동으로 인증이 풀리게 되어 로그아웃
+    User.findOneAndUpdate({_id: req.user._id}, {token: ""}, (err, user) => {
+        if(err) return res.json({success: false, err});
+        return res.status(200).send({success: true});
+    });
 });
 
 app.listen(port, () => console.log("Example app listening on port ${port}!"));
